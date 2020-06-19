@@ -189,7 +189,7 @@ dmenu_exe = dmenu_exe.split()
 
 # --- Get X Window ID ---
 window_id_cmd = subprocess.check_output(['xprop', '-root', '-notype', '_NET_ACTIVE_WINDOW']).decode('utf-8')
-window_id = window_id_cmd.split(' ')[4].split('\n')[0]
+window_id = window_id_cmd.split('#')[1].split(',')[0].strip()
 
 print('Window id is :', window_id)
 
