@@ -159,7 +159,7 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
 dmenu_exe = None
 opts, args = getopt(argv[1:],'', ['dmenu='])
 for opt in opts:
-  if opt[0] == '-dmenu':
+  if opt[0] == '--dmenu':
     dmenu_exe = opt[1]
 
 if not dmenu_exe:
