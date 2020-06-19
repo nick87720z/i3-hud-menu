@@ -98,6 +98,9 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
   gtk_action_object_actions_iface = dbus.Interface(gtk_menubar_object, dbus_interface='org.gtk.Actions')
   gtk_menubar_results = gtk_menubar_object_iface.Start([x for x in range(1024)])
 
+  if len(gtk_menubar_results) == 0:
+    return
+
   # --- Construct menu list ---
   gtk_menubar_menus = dict()
   for gtk_menubar_result in gtk_menubar_results:
