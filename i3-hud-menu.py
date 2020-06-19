@@ -108,6 +108,9 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
 
   """ explore_menu """
   def explore_menu(menu_id, label_list):
+    if not menu_id in gtk_menubar_menus:
+      return
+
     for menu in gtk_menubar_menus[menu_id]:
       if 'label' in menu:
         menu_label = menu['label'].replace('_', '')
