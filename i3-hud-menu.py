@@ -3,6 +3,10 @@
 import dbus
 import subprocess
 
+from sys import argv
+from getopt import getopt
+from os import getenv
+
 """
   format_label_list
 """
@@ -63,7 +67,7 @@ def try_appmenu_interface(window_id):
     dmenu_string += '\n'
     dmenu_string += m
 
-  dmenu_cmd = subprocess.Popen(['dmenu', '-i', '-l', '10'], stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+  dmenu_cmd = subprocess.Popen(dmenu_exe + ['-i', '-l', '10'], stdout=subprocess.PIPE, stdin=subprocess.PIPE)
   dmenu_cmd.stdin.write(dmenu_string.encode('utf-8'))
   dmenu_result = dmenu_cmd.communicate()[0].decode('utf-8').strip('\n')
   dmenu_cmd.stdin.close()
@@ -136,7 +140,7 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
     dmenu_string += '\n'
     dmenu_string += m
 
-  dmenu_cmd = subprocess.Popen(['dmenu', '-i', '-l', '10'], stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+  dmenu_cmd = subprocess.Popen(dmenu_exe + ['-i', '-l', '10'], stdout=subprocess.PIPE, stdin=subprocess.PIPE)
   dmenu_cmd.stdin.write(dmenu_string.encode('utf-8'))
   dmenu_result = dmenu_cmd.communicate()[0].decode('utf-8').strip('\n')
   dmenu_cmd.stdin.close()
@@ -150,6 +154,21 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
 """
   main
 """
+
+# --- Get DMenu command ---
+dmenu_exe = None
+opts, args = getopt(argv[1:],'', ['dmenu='])
+for opt in opts:
+  if opt[0] == '-dmenu':
+    dmenu_exe = opt[1]
+
+if not dmenu_exe:
+  dmenu_exe = getenv('DMENU')
+
+if not dmenu_exe:
+  dmenu_exe = 'dmenu'
+
+dmenu_exe = dmenu_exe.split()
 
 # --- Get X Window ID ---
 window_id_cmd = subprocess.check_output(['xprop', '-root', '-notype', '_NET_ACTIVE_WINDOW']).decode('utf-8')
