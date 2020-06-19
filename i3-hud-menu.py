@@ -7,6 +7,10 @@ from sys import argv
 from getopt import getopt
 from os import getenv
 
+def help():
+  print ("Usage:")
+  print (" " + argv[0] + " [--dmenu=CMD] [--sep=SEPARATOR]")
+
 """
   format_label_list
 """
@@ -159,12 +163,15 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
 dmenu_exe = None
 separator = " > "
 
-opts, args = getopt(argv[1:], '', ['dmenu=', 'sep='])
+opts, args = getopt(argv[1:], '', ['dmenu=', 'sep=', 'help'])
 for opt in opts:
   if opt[0] == '--dmenu':
     dmenu_exe = opt[1]
   elif opt[0] == '--sep':
     separator = opt[1]
+  elif opt[0] == '--help':
+    help()
+    exit(0)
 
 if not dmenu_exe:
   dmenu_exe = getenv('DMENU')
