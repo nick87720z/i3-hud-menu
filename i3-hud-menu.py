@@ -14,7 +14,7 @@ def format_label_list(label_list):
   head, *tail = label_list
   result = head
   for label in tail:
-    result = result + " > " + label
+    result = result + separator + label
   return result
 
 """
@@ -157,10 +157,14 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
 
 # --- Get DMenu command ---
 dmenu_exe = None
-opts, args = getopt(argv[1:],'', ['dmenu='])
+separator = " > "
+
+opts, args = getopt(argv[1:], '', ['dmenu=', 'sep='])
 for opt in opts:
   if opt[0] == '--dmenu':
     dmenu_exe = opt[1]
+  elif opt[0] == '--sep':
+    separator = opt[1]
 
 if not dmenu_exe:
   dmenu_exe = getenv('DMENU')
