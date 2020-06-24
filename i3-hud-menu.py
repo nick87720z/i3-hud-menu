@@ -170,7 +170,7 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
     else:
       dmenu_string += m
 
-  dmenu_cmd = subprocess.Popen(dmenu_exe + ['-p', 'Application Menu', '-markup-rows'], stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+  dmenu_cmd = subprocess.Popen(dmenu_exe, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
   dmenu_cmd.stdin.write(dmenu_string.encode('utf-8'))
   dmenu_result = dmenu_cmd.communicate()[0].decode('utf-8').strip('\n')
   dmenu_cmd.stdin.close()
