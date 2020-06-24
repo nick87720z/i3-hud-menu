@@ -178,8 +178,8 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
   dmenu_string = head
   for m in tail:
     dmenu_string += '\n'
+    dmenu_string += gtk_menubar_prefix_dict[m]
     if m in gtk_menubar_accel_dict:
-      dmenu_string += gtk_menubar_prefix_dict[m]
       dmenu_string += ('{:<' + max_width_str + '}').format (m)
       accel = gtk_menubar_accel_dict[m]
       if len(accel) > 0:
