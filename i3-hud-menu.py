@@ -113,10 +113,17 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
   gtk_menubar_action_dict = dict()
   gtk_menubar_target_dict = dict()
   gtk_menubar_accel_dict  = dict()
+  gtk_menubar_prefix_dict = dict()
 
   """ explore_menu """
   def explore_menu(menu_id, label_list):
     global max_width
+
+    prefix = ['    ' ,
+              '[ ] ' ,
+              '[x] ' ,
+              '( ) ' ,
+              '(x) ' ]
 
     if not menu_id in gtk_menubar_menus:
       return
@@ -140,6 +147,13 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
       if 'action' in menu:
         menu_action = menu['action']
         gtk_menubar_action_dict[formatted_label] = menu_action
+
+        desc = gtk_action_object_actions_iface.Describe (menu_action.replace('unity.', ''))
+        prefn = 0
+        if len( desc[2] ) > 0:
+          prefn = 2 if desc[2][0] else 1
+        gtk_menubar_prefix_dict[formatted_label] = prefix[prefn]
+
         if 'target' in menu:
           menu_target = menu['target']
           gtk_menubar_target_dict[formatted_label] = menu_target
@@ -165,6 +179,7 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
   for m in tail:
     dmenu_string += '\n'
     if m in gtk_menubar_accel_dict:
+      dmenu_string += gtk_menubar_prefix_dict[m]
       dmenu_string += ('{:<' + max_width_str + '}').format (m)
       accel = gtk_menubar_accel_dict[m]
       if len(accel) > 0:
@@ -178,7 +193,7 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
   dmenu_cmd.stdin.close()
 
   # --- Use dmenu result
-  dmenu_result = dmenu_result[0:max_width].rstrip()
+  dmenu_result = dmenu_result[4:max_width+4].rstrip()
   if dmenu_result in gtk_menubar_action_dict:
     action = gtk_menubar_action_dict[dmenu_result]
     print('GTK Action :', action)
