@@ -7,6 +7,8 @@ from sys import argv
 from getopt import getopt
 from os import getenv
 
+max_width = 0
+
 def help():
   print ("Usage:")
   print (" " + argv[0] + " [--dmenu=CMD] [--sep=SEPARATOR]")
@@ -86,6 +88,8 @@ def try_appmenu_interface(window_id):
   try_gtk_interface
 """
 def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
+  global max_width
+
   gtk_bus_name = gtk_bus_name_cmd.split(' ')[2].split('\n')[0].split('"')[1]
   print(gtk_object_path_cmd)
   gtk_object_path = gtk_object_path_cmd.split(' ')[2].split('\n')[0].split('"')[1]
@@ -108,9 +112,12 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
 
   gtk_menubar_action_dict = dict()
   gtk_menubar_target_dict = dict()
+  gtk_menubar_accel_dict  = dict()
 
   """ explore_menu """
   def explore_menu(menu_id, label_list):
+    global max_width
+
     if not menu_id in gtk_menubar_menus:
       return
 
@@ -121,7 +128,14 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
         menu_label = '?'
 
       new_label_list = label_list + [menu_label]
-      formatted_label = format_label_list(new_label_list)
+      formatted_label = format_label_list(new_label_list).rstrip()
+      w = len ( formatted_label )
+      if w > max_width:
+        max_width = w
+
+      if 'accel' in menu:
+        menu_accel = menu['accel'].replace('<Primary>', 'Ctrl + ').replace('<Shift>', 'Shift + ')
+        gtk_menubar_accel_dict[formatted_label] = menu_accel
 
       if 'action' in menu:
         menu_action = menu['action']
@@ -141,6 +155,8 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
         explore_menu(submenu_menu_id, new_label_list)
 
   explore_menu((0,0), [])
+  max_width += 1
+  max_width_str = str (max_width)
 
   # --- Run dmenu
   dmenu_string = ''
@@ -148,14 +164,19 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
   dmenu_string = head
   for m in tail:
     dmenu_string += '\n'
-    dmenu_string += m
+    if m in gtk_menubar_accel_dict:
+      dmenu_string += ('{:<' + max_width_str + '}').format (m)
+      dmenu_string += '<b>' + gtk_menubar_accel_dict[m] + '</b>'
+    else:
+      dmenu_string += m
 
-  dmenu_cmd = subprocess.Popen(dmenu_exe + ['-p', 'Application Menu'], stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+  dmenu_cmd = subprocess.Popen(dmenu_exe + ['-p', 'Application Menu', '-markup-rows'], stdout=subprocess.PIPE, stdin=subprocess.PIPE)
   dmenu_cmd.stdin.write(dmenu_string.encode('utf-8'))
   dmenu_result = dmenu_cmd.communicate()[0].decode('utf-8').strip('\n')
   dmenu_cmd.stdin.close()
 
   # --- Use dmenu result
+  dmenu_result = dmenu_result[0:max_width].rstrip()
   if dmenu_result in gtk_menubar_action_dict:
     action = gtk_menubar_action_dict[dmenu_result]
     print('GTK Action :', action)
