@@ -11,7 +11,7 @@ max_width = 0
 
 def help():
   print ("Usage:")
-  print (" " + argv[0] + " [--dmenu=CMD] [--sep=SEPARATOR]")
+  print (" " + argv[0] + " [--dmenu=CMD] [--sep=SEPARATOR] [--markup]")
 
 """
   format_label_list
@@ -166,7 +166,9 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
     dmenu_string += '\n'
     if m in gtk_menubar_accel_dict:
       dmenu_string += ('{:<' + max_width_str + '}').format (m)
-      dmenu_string += '<b>' + gtk_menubar_accel_dict[m] + '</b>'
+      accel = gtk_menubar_accel_dict[m]
+      if len(accel) > 0:
+        dmenu_string += kb_left + accel + kb_right
     else:
       dmenu_string += m
 
@@ -191,9 +193,11 @@ def xprop_set(prop):
 
 # --- Get DMenu command ---
 dmenu_exe = None
-separator = " > "
+separator = ' > '
+kb_left = '['
+kb_right = ']'
 
-opts, args = getopt(argv[1:], '', ['dmenu=', 'sep=', 'help'])
+opts, args = getopt(argv[1:], '', ['dmenu=', 'sep=', 'help', 'markup'])
 for opt in opts:
   if opt[0] == '--dmenu':
     dmenu_exe = opt[1]
@@ -202,6 +206,9 @@ for opt in opts:
   elif opt[0] == '--help':
     help()
     exit(0)
+  elif opt[0] == '--markup':
+    kb_left = '<b>'
+    kb_right = '</b>'
 
 if not dmenu_exe:
   dmenu_exe = getenv('DMENU')
