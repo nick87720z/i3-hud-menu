@@ -10,11 +10,11 @@ from os import getenv
 max_width = 0
 
 prefix = [''     ,
-          ' ' + (b' ').decode()                        + '  ',
-          ' ' + (b' \xE2\x83\x9E').decode()            + '  ',
-          ' ' + (b'\xE2\xAC\xA4\xE2\x83\x9E').decode() + '  ',
-          ' ' + (b' \xE2\x83\x9D').decode()            + '  ',
-          ' ' + (b'\xE2\xAC\xA4\xE2\x83\x9D').decode() + '  ' ]
+          ' ' + (b' '                       ).decode('utf-8') + '  ',
+          ' ' + (b' \xE2\x83\x9E'           ).decode('utf-8') + '  ',
+          ' ' + (b'\xE2\xAC\xA4\xE2\x83\x9E').decode('utf-8') + '  ',
+          ' ' + (b' \xE2\x83\x9D'           ).decode('utf-8') + '  ',
+          ' ' + (b'\xE2\xAC\xA4\xE2\x83\x9D').decode('utf-8') + '  ' ]
 
 def help():
   print ("Usage:")
