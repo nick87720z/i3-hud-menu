@@ -96,40 +96,40 @@ def try_appmenu_interface(window_id):
 """
   try_gtk_interface
 """
-def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
+def try_gtk_interface(g_bus_name_cmd, g_menubar_path_cmd):
   global max_width
 
-  gtk_bus_name = gtk_bus_name_cmd.split(' ')[2].split('\n')[0].split('"')[1]
-  print(gtk_object_path_cmd)
-  gtk_object_path = gtk_object_path_cmd.split(' ')[2].split('\n')[0].split('"')[1]
-  print("GTK MenuModel Bus name and object path: ", gtk_bus_name, gtk_object_path)
+  g_bus_name = g_bus_name_cmd.split(' ')[2].split('\n')[0].split('"')[1]
+  print(g_menubar_path_cmd)
+  g_menubar_path = g_menubar_path_cmd.split(' ')[2].split('\n')[0].split('"')[1]
+  print("GTK MenuModel Bus name and object path: ", g_bus_name, g_menubar_path)
 
   # --- Ask for menus over DBus ---
   session_bus = dbus.SessionBus()
-  gtk_menubar_object = session_bus.get_object(gtk_bus_name, gtk_object_path)
-  gtk_menubar_object_iface = dbus.Interface(gtk_menubar_object, dbus_interface='org.gtk.Menus')
-  gtk_action_object_actions_iface = dbus.Interface(gtk_menubar_object, dbus_interface='org.gtk.Actions')
-  gtk_menubar_results = gtk_menubar_object_iface.Start([x for x in range(1024)])
+  g_menubar_object = session_bus.get_object(g_bus_name, g_menubar_path)
+  g_menubar_object_iface = dbus.Interface(g_menubar_object, dbus_interface='org.gtk.Menus')
+  g_action_object_actions_iface = dbus.Interface(g_menubar_object, dbus_interface='org.gtk.Actions')
+  g_menubar_results = g_menubar_object_iface.Start([x for x in range(1024)])
 
-  if len(gtk_menubar_results) == 0:
+  if len(g_menubar_results) == 0:
     return
 
   # --- Construct menu list ---
-  gtk_menubar_menus = dict()
-  for gtk_menubar_result in gtk_menubar_results:
-    gtk_menubar_menus[(gtk_menubar_result[0], gtk_menubar_result[1])] = gtk_menubar_result[2]
+  g_menubar_menus = dict()
+  for g_menubar_result in g_menubar_results:
+    g_menubar_menus[(g_menubar_result[0], g_menubar_result[1])] = g_menubar_result[2]
 
-  gtk_menubar_dict = dict()
+  g_menubar_dict = dict()
 
   """ explore_menu """
   def explore_menu(menu_id, label_list):
     global max_width
     global prefix
 
-    if not menu_id in gtk_menubar_menus:
+    if not menu_id in g_menubar_menus:
       return
 
-    for menu in gtk_menubar_menus[menu_id]:
+    for menu in g_menubar_menus[menu_id]:
       label_set = 'label' in menu
       if label_set:
         label_list += [ menu['label'].replace('_', '') ]
@@ -143,14 +143,20 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
 
       if 'accel' in menu:
         accel = menu['accel']
-        for r in (('<Primary>', 'Ctrl + '), ('<Shift>', 'Shift + '), ('<Alt>', 'Alt + ')):
-          accel = accel.replace (*r, 1)
+
+        if len(accel) > 1:
+          mch = '>' if accel.endswith('<') else '<'
+          for r in (('<Primary>', 'Ctrl + '), ('<Alt>', 'Alt + '), ('<Shift>', 'Shift + ')):
+
+            accel = accel.replace (*r, 1)
+            if accel.find (mch) == -1:
+              break
       else:
         accel = None
 
       if 'action' in menu:
         action = menu['action']
-        desc = gtk_action_object_actions_iface.Describe (action.replace('unity.', ''))
+        desc = g_action_object_actions_iface.Describe (action.replace('unity.', ''))
         prefn = 1
         target = None
 
@@ -162,7 +168,7 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
         elif is_submenu:
           prefn = 0
 
-        gtk_menubar_dict[formatted_label] = ( action, prefix[prefn], accel, target )
+        g_menubar_dict[formatted_label] = ( action, prefix[prefn], accel, target )
 
       if ':section' in menu:
         section = menu[':section']
@@ -183,10 +189,10 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
 
   # --- Run dmenu
   string = ''
-  head, *tail = gtk_menubar_dict.keys()
+  head, *tail = g_menubar_dict.keys()
   string = head
   for m in tail:
-    act, pref, accel, targ = gtk_menubar_dict[m]
+    act, pref, accel, targ = g_menubar_dict[m]
     string += '\n'
     string += pref
 
@@ -210,14 +216,14 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
       break
 
   result = result[indent:max_width+indent].rstrip()
-  if result in gtk_menubar_dict:
-    action, pref, accel, target = gtk_menubar_dict[result]
+  if result in g_menubar_dict:
+    action, pref, accel, target = g_menubar_dict[result]
     param = []
 
     if target:
       param.append (target)
     print('GTK Action :', action)
-    gtk_action_object_actions_iface.Activate(action.replace('unity.', ''), param, dict())
+    g_action_object_actions_iface.Activate(action.replace('unity.', ''), param, dict())
 
 def xprop_set(prop):
   return (prop.find(':') == -1) or not prop.split(':')[1] in ['  not found.\n', '  no such atom on any window.\n']
@@ -261,10 +267,10 @@ print('Window id is :', window_id)
 
 # --- Get GTK MenuModel Bus name ---
 
-gtk_bus_name_cmd = subprocess.check_output(['xprop', '-id', window_id, '-notype', '_GTK_UNIQUE_BUS_NAME']).decode('utf-8')
-gtk_object_path_cmd = subprocess.check_output(['xprop', '-id', window_id, '-notype', '_GTK_MENUBAR_OBJECT_PATH']).decode('utf-8')
+g_bus_name_cmd = subprocess.check_output(['xprop', '-id', window_id, '-notype', '_GTK_UNIQUE_BUS_NAME']).decode('utf-8')
+g_menubar_path_cmd = subprocess.check_output(['xprop', '-id', window_id, '-notype', '_GTK_MENUBAR_OBJECT_PATH']).decode('utf-8')
 
-if not xprop_set (gtk_bus_name_cmd) or not xprop_set (gtk_object_path_cmd):
-  try_appmenu_interface(int(window_id, 16))
+if xprop_set (g_bus_name_cmd) and xprop_set (g_menubar_path_cmd):
+  try_gtk_interface(g_bus_name_cmd, g_menubar_path_cmd)
 else:
-  try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd)
+  try_appmenu_interface(int(window_id, 16))
