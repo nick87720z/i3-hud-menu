@@ -196,8 +196,11 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
   dmenu_result = dmenu_result[4:max_width+4].rstrip()
   if dmenu_result in gtk_menubar_action_dict:
     action = gtk_menubar_action_dict[dmenu_result]
+    param = []
+    if dmenu_result in gtk_menubar_target_dict:
+      param.append (gtk_menubar_target_dict[dmenu_result])
     print('GTK Action :', action)
-    gtk_action_object_actions_iface.Activate(action.replace('unity.', ''), [], dict())
+    gtk_action_object_actions_iface.Activate(action.replace('unity.', ''), param, dict())
 
 def xprop_set(prop):
   return (prop.find(':') == -1) or not prop.split(':')[1] in ['  not found.\n', '  no such atom on any window.\n']
