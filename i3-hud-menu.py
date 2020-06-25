@@ -203,7 +203,8 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
   cmd.stdin.close()
 
   # --- Use dmenu result
-  result = result[4:max_width+4].rstrip()
+  indent = len (prefix[1])
+  result = result[indent:max_width+indent].rstrip()
   if result in gtk_menubar_dict:
     action, pref, accel, target = gtk_menubar_dict[result]
     param = []
