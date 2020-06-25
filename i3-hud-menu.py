@@ -127,43 +127,43 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
 
     for menu in gtk_menubar_menus[menu_id]:
       if 'label' in menu:
-        menu_label = menu['label'].replace('_', '')
+        label = menu['label'].replace('_', '')
       else:
-        menu_label = '?'
+        label = '?'
 
-      new_label_list = label_list + [menu_label]
+      new_label_list = label_list + [label]
       formatted_label = format_label_list(new_label_list).rstrip()
       w = len ( formatted_label )
       if w > max_width:
         max_width = w
 
       if 'accel' in menu:
-        menu_accel = menu['accel'].replace('<Primary>', 'Ctrl + ').replace('<Shift>', 'Shift + ')
+        accel = menu['accel'].replace('<Primary>', 'Ctrl + ').replace('<Shift>', 'Shift + ')
       else:
-        menu_accel = None
+        accel = None
 
       if 'action' in menu:
-        menu_action = menu['action']
-        desc = gtk_action_object_actions_iface.Describe (menu_action.replace('unity.', ''))
+        action = menu['action']
+        desc = gtk_action_object_actions_iface.Describe (action.replace('unity.', ''))
         prefn = 0
-        menu_target = None
+        target = None
 
         if 'target' in menu:
-          menu_target = menu['target']
-          prefn = 4 if (desc[2][0] == menu_target) else 3
+          target = menu['target']
+          prefn = 4 if (desc[2][0] == target) else 3
         elif len( desc[2] ) > 0:
           prefn = 2 if desc[2][0] else 1
 
-        gtk_menubar_dict[formatted_label] = ( menu_action, prefix[prefn], menu_accel, menu_target )
+        gtk_menubar_dict[formatted_label] = ( action, prefix[prefn], accel, target )
 
       if ':section' in menu:
-        menu_section = menu[':section']
-        section_menu_id = (menu_section[0], menu_section[1])
+        section = menu[':section']
+        section_menu_id = (section[0], section[1])
         explore_menu(section_menu_id, label_list)
 
       if ':submenu' in menu:
-        menu_submenu = menu[':submenu']
-        submenu_menu_id = (menu_submenu[0], menu_submenu[1])
+        submenu = menu[':submenu']
+        submenu_menu_id = (submenu[0], submenu[1])
         explore_menu(submenu_menu_id, new_label_list)
 
   explore_menu((0,0), [])
@@ -171,30 +171,30 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
   max_width_str = str (max_width)
 
   # --- Run dmenu
-  dmenu_string = ''
+  string = ''
   head, *tail = gtk_menubar_dict.keys()
-  dmenu_string = head
+  string = head
   for m in tail:
     act, pref, accel, targ = gtk_menubar_dict[m]
-    dmenu_string += '\n'
-    dmenu_string += pref
+    string += '\n'
+    string += pref
 
     if accel:
-      dmenu_string += ('{:<' + max_width_str + '}').format (m)
+      string += ('{:<' + max_width_str + '}').format (m)
       if len(accel) > 0:
-        dmenu_string += kb_left + accel + kb_right
+        string += kb_left + accel + kb_right
     else:
-      dmenu_string += m
+      string += m
 
-  dmenu_cmd = subprocess.Popen(dmenu_exe, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-  dmenu_cmd.stdin.write(dmenu_string.encode('utf-8'))
-  dmenu_result = dmenu_cmd.communicate()[0].decode('utf-8').strip('\n')
-  dmenu_cmd.stdin.close()
+  cmd = subprocess.Popen(dmenu_exe, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+  cmd.stdin.write(string.encode('utf-8'))
+  result = cmd.communicate()[0].decode('utf-8').strip('\n')
+  cmd.stdin.close()
 
   # --- Use dmenu result
-  dmenu_result = dmenu_result[4:max_width+4].rstrip()
-  if dmenu_result in gtk_menubar_dict:
-    action, pref, accel, target = gtk_menubar_dict[dmenu_result]
+  result = result[4:max_width+4].rstrip()
+  if result in gtk_menubar_dict:
+    action, pref, accel, target = gtk_menubar_dict[result]
     param = []
 
     if target:
