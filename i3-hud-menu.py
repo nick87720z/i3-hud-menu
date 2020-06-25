@@ -150,13 +150,14 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
 
         desc = gtk_action_object_actions_iface.Describe (menu_action.replace('unity.', ''))
         prefn = 0
-        if len( desc[2] ) > 0:
-          prefn = 2 if desc[2][0] else 1
-        gtk_menubar_prefix_dict[formatted_label] = prefix[prefn]
 
         if 'target' in menu:
           menu_target = menu['target']
           gtk_menubar_target_dict[formatted_label] = menu_target
+          prefn = 4 if (desc[2][0] == menu_target) else 3
+        elif len( desc[2] ) > 0:
+          prefn = 2 if desc[2][0] else 1
+        gtk_menubar_prefix_dict[formatted_label] = prefix[prefn]
 
       if ':section' in menu:
         menu_section = menu[':section']
