@@ -128,21 +128,16 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
       return
 
     for menu in gtk_menubar_menus[menu_id]:
-      if 'label' in menu:
-        label = menu['label'].replace('_', '')
-      else:
-        label = '?'
+      label_set = 'label' in menu
+      if label_set:
+        label_list += [ menu['label'].replace('_', '') ]
 
-      new_label_list = label_list + [label]
-      formatted_label = format_label_list(new_label_list).rstrip()
+      formatted_label = format_label_list(label_list).rstrip()
       w = len ( formatted_label )
       if w > max_width:
         max_width = w
 
-      if 'accel' in menu:
-        accel = menu['accel'].replace('<Primary>', 'Ctrl + ').replace('<Shift>', 'Shift + ')
-      else:
-        accel = None
+      accel = None if not ( 'accel' in menu ) else menu['accel'].replace('<Primary>', 'Ctrl + ').replace('<Shift>', 'Shift + ')
 
       if 'action' in menu:
         action = menu['action']
@@ -166,7 +161,10 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
       if ':submenu' in menu:
         submenu = menu[':submenu']
         submenu_menu_id = (submenu[0], submenu[1])
-        explore_menu(submenu_menu_id, new_label_list)
+        explore_menu(submenu_menu_id, label_list)
+
+      if label_set:
+        label_list.pop()
 
   explore_menu((0,0), [])
   max_width += 1
