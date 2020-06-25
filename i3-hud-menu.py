@@ -17,6 +17,8 @@ def help():
   format_label_list
 """
 def format_label_list(label_list):
+  if len(label_list) == 0:
+    return ''
   head, *tail = label_list
   result = head
   for label in tail:
