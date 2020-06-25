@@ -118,7 +118,8 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
   def explore_menu(menu_id, label_list):
     global max_width
 
-    prefix = ['    ' ,
+    prefix = [''     ,
+              '    ' ,
               '[ ] ' ,
               '[x] ' ,
               '( ) ' ,
@@ -137,6 +138,8 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
       if w > max_width:
         max_width = w
 
+      is_submenu = ':submenu' in menu
+
       if 'accel' in menu:
         accel = menu['accel']
         for r in (('<Primary>', 'Ctrl + '), ('<Shift>', 'Shift + '), ('<Alt>', 'Alt + ')):
@@ -147,14 +150,16 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
       if 'action' in menu:
         action = menu['action']
         desc = gtk_action_object_actions_iface.Describe (action.replace('unity.', ''))
-        prefn = 0
+        prefn = 1
         target = None
 
         if 'target' in menu:
           target = menu['target']
-          prefn = 4 if (desc[2][0] == target) else 3
+          prefn = 5 if (desc[2][0] == target) else 4
         elif len( desc[2] ) > 0:
-          prefn = 2 if desc[2][0] else 1
+          prefn = 3 if desc[2][0] else 2
+        elif is_submenu:
+          prefn = 0
 
         gtk_menubar_dict[formatted_label] = ( action, prefix[prefn], accel, target )
 
@@ -163,7 +168,7 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
         section_menu_id = (section[0], section[1])
         explore_menu(section_menu_id, label_list)
 
-      if ':submenu' in menu:
+      if is_submenu:
         submenu = menu[':submenu']
         submenu_menu_id = (submenu[0], submenu[1])
         explore_menu(submenu_menu_id, label_list)
