@@ -9,6 +9,13 @@ from os import getenv
 
 max_width = 0
 
+prefix = [''     ,
+          ' ' + (b' ').decode()                        + '  ',
+          ' ' + (b' \xE2\x83\x9E').decode()            + '  ',
+          ' ' + (b'\xE2\xAC\xA4\xE2\x83\x9E').decode() + '  ',
+          ' ' + (b' \xE2\x83\x9D').decode()            + '  ',
+          ' ' + (b'\xE2\xAC\xA4\xE2\x83\x9D').decode() + '  ' ]
+
 def help():
   print ("Usage:")
   print (" " + argv[0] + " [--dmenu=CMD] [--sep=SEPARATOR] [--markup]")
@@ -117,13 +124,7 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
   """ explore_menu """
   def explore_menu(menu_id, label_list):
     global max_width
-
-    prefix = [''     ,
-              '    ' ,
-              '[ ] ' ,
-              '[x] ' ,
-              '( ) ' ,
-              '(x) ' ]
+    global prefix
 
     if not menu_id in gtk_menubar_menus:
       return
