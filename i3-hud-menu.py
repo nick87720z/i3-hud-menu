@@ -137,7 +137,7 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
       if w > max_width:
         max_width = w
 
-      accel = None if not ( 'accel' in menu ) else menu['accel'].replace('<Primary>', 'Ctrl + ').replace('<Shift>', 'Shift + ')
+      accel = None if not ( 'accel' in menu ) else menu['accel'].replace('<Primary>', 'Ctrl + ', 1).replace('<Shift>', 'Shift + ', 1).replace('<Alt>', 'Alt + ', 1)
 
       if 'action' in menu:
         action = menu['action']
