@@ -203,7 +203,12 @@ def try_gtk_interface(gtk_bus_name_cmd, gtk_object_path_cmd):
   cmd.stdin.close()
 
   # --- Use dmenu result
-  indent = len (prefix[1])
+  indent = 0
+  for p in prefix[1:]:
+    if result.startswith (p):
+      indent = len (p)
+      break
+
   result = result[indent:max_width+indent].rstrip()
   if result in gtk_menubar_dict:
     action, pref, accel, target = gtk_menubar_dict[result]
