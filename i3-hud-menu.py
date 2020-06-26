@@ -98,6 +98,7 @@ def try_appmenu_interface(window_id):
 """
 def try_gtk_interface(g_bus_name_cmd, g_menubar_path_cmd, g_action_path_cmd):
   global max_width
+  global success
 
   g_bus_name = g_bus_name_cmd.split(' ')[2].split('\n')[0].split('"')[1]
   print(g_menubar_path_cmd)
@@ -128,6 +129,7 @@ def try_gtk_interface(g_bus_name_cmd, g_menubar_path_cmd, g_action_path_cmd):
   def explore_menu(menu_id, label_list):
     global max_width
     global prefix
+    global success
 
     if not menu_id in g_menubar_menus:
       return
@@ -158,6 +160,7 @@ def try_gtk_interface(g_bus_name_cmd, g_menubar_path_cmd, g_action_path_cmd):
         accel = None
 
       if 'action' in menu:
+        success = True
         action = menu['action']
         desc = g_action_object_iface.Describe (action.replace(act_prefix, ''))
         prefn = 1
@@ -236,6 +239,7 @@ def xprop_set(prop):
 """
 
 # --- Get DMenu command ---
+success = False
 dmenu_exe = None
 separator = ' > '
 kb_left = '['
@@ -277,13 +281,14 @@ g_menubar_path_cmd = subprocess.check_output(['xprop', '-id', window_id, '-notyp
 g_app_path_cmd = subprocess.check_output(['xprop', '-id', window_id, '-notype', '_GTK_APPLICATION_OBJECT_PATH']).decode('utf-8')
 g_appmenu_path_cmd = subprocess.check_output(['xprop', '-id', window_id, '-notype', '_GTK_APP_MENU_OBJECT_PATH']).decode('utf-8')
 
-if xprop_set (g_bus_name_cmd) and xprop_set (g_menubar_path_cmd):
-  if not xprop_set (g_action_path_cmd):
-    g_action_path_cmd = g_menubar_path_cmd
-    act_prefix = 'unity.'
-  else:
-    act_prefix = 'win.'
-  try_gtk_interface(g_bus_name_cmd, g_menubar_path_cmd, g_action_path_cmd)
-elif xprop_set (g_app_path_cmd) and xprop_set (g_appmenu_path_cmd):
-  act_prefix = 'app.'
-  try_gtk_interface(g_bus_name_cmd, g_appmenu_path_cmd, g_app_path_cmd)
+if xprop_set (g_bus_name_cmd):
+  if xprop_set (g_menubar_path_cmd):
+    if not xprop_set (g_action_path_cmd):
+      g_action_path_cmd = g_menubar_path_cmd
+      act_prefix = 'unity.'
+    else:
+      act_prefix = 'win.'
+    try_gtk_interface(g_bus_name_cmd, g_menubar_path_cmd, g_action_path_cmd)
+  if not success and xprop_set (g_app_path_cmd) and xprop_set (g_appmenu_path_cmd):
+    act_prefix = 'app.'
+    try_gtk_interface(g_bus_name_cmd, g_appmenu_path_cmd, g_app_path_cmd)
